@@ -13,7 +13,7 @@ export default function AboutPage() {
         <p>A calmer workspace is built one thoughtful choice at a time.</p>
       </div>
       <Image
-        src="/images/workspace-hero.png"
+        src="/images/workspace-hero.webp"
         alt="An organised workspace in soft daylight"
         width={1672}
         height={941}

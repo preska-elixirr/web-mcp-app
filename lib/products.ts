@@ -9,5 +9,5 @@ export function productHref(product: Product): string {
   return `/products/${productSlug(product)}`;
 }
 export function productImage(product: Product): string {
-  return `/products/${product.id}.png`;
+  return `/products/${product.id}.webp`;
 }

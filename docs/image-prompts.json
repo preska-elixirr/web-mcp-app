@@ -4,104 +4,104 @@
   "commonPrompt": "Use case: product-mockup. Asset type: individual ecommerce product photo for the Office Supply shop. Subject: ${subject} Style: photorealistic premium studio product photography with accurate materials, restrained Scandinavian styling. Backdrop: seamless warm ivory surface and background, very soft natural shadow. Composition: square 1:1 image, one complete product centred with generous clear margin, product fills approximately 65 percent of image, camera slightly elevated. Lighting: soft diffused daylight, consistent colour and exposure. Avoid: logos, brand marks, watermarks, captions, border, collage, people, extra products. Generate one image only.",
   "products": [
     {
-      "path": "public/products/kb-air.png",
+      "path": "public/products/kb-air.webp",
       "subject": "A compact 75 percent wireless keyboard with ivory low-profile keys, soft sage accents and an aluminium silver body, shown at a gentle three-quarter angle."
     },
     {
-      "path": "public/products/kb-studio.png",
+      "path": "public/products/kb-studio.webp",
       "subject": "A full-size wireless keyboard with number pad, pale warm grey low-profile keys and slim silver body, shown at a gentle three-quarter angle."
     },
     {
-      "path": "public/products/kb-type.png",
+      "path": "public/products/kb-type.webp",
       "subject": "A premium 80 percent mechanical keyboard with charcoal keycaps, subtly sage green accent keys and black aluminium body, tactile thick keycaps, USB-C wired."
     },
     {
-      "path": "public/products/kb-basic.png",
+      "path": "public/products/kb-basic.webp",
       "subject": "A simple full-size wired USB keyboard with number pad, off-white keys and matte cream plastic body, modest cable neatly coiled alongside."
     },
     {
-      "path": "public/products/mouse-air.png",
+      "path": "public/products/mouse-air.webp",
       "subject": "A small ivory wireless computer mouse with two simple buttons and a sage scroll wheel, clean symmetrical rounded shape."
     },
     {
-      "path": "public/products/mouse-arc.png",
+      "path": "public/products/mouse-arc.webp",
       "subject": "An ergonomic wireless computer mouse in muted sage green, sculpted right-hand curved shell, subtle side thumb buttons and dark scroll wheel."
     },
     {
-      "path": "public/products/mouse-track.png",
+      "path": "public/products/mouse-track.webp",
       "subject": "A basic symmetrical wired USB computer mouse in graphite grey with a single scroll wheel and neatly arranged black cable."
     },
     {
-      "path": "public/products/mouse-pro.png",
+      "path": "public/products/mouse-pro.webp",
       "subject": "A professional ergonomic wireless computer mouse in warm charcoal with a metal horizontal thumb wheel, silver main scroll wheel and sculpted grip."
     },
     {
-      "path": "public/products/monitor-focus.png",
+      "path": "public/products/monitor-focus.webp",
       "subject": "A minimal 24-inch computer monitor with thin black bezels and silver height-adjustable stand, screen shows a calm abstract sage green and ivory geometric wallpaper, no interface or text."
     },
     {
-      "path": "public/products/monitor-studio.png",
+      "path": "public/products/monitor-studio.webp",
       "subject": "A premium 27-inch computer monitor with slim silver bezels and a sleek rectangular silver stand, screen shows a calm pale green abstract gradient wallpaper without text."
     },
     {
-      "path": "public/products/monitor-wide.png",
+      "path": "public/products/monitor-wide.webp",
       "subject": "A 34-inch ultrawide curved computer monitor with matte black thin bezels and understated charcoal stand, screen shows panoramic muted green abstract wallpaper with no interface."
     },
     {
-      "path": "public/products/monitor-go.png",
+      "path": "public/products/monitor-go.webp",
       "subject": "A portable slim 16-inch computer monitor in a dark grey foldable folio cover acting as its stand, screen shows soft sage and cream abstract shapes, short USB-C cable neatly beside."
     },
     {
-      "path": "public/products/acc-hub.png",
+      "path": "public/products/acc-hub.webp",
       "subject": "A brushed silver aluminium USB-C laptop hub with six visible ports, HDMI and USB-A ports, short integrated USB-C cable curved gently alongside."
     },
     {
-      "path": "public/products/acc-mat.png",
+      "path": "public/products/acc-mat.webp",
       "subject": "A large rectangular recycled felt desk mat in soft warm grey with rounded corners and subtly textured fibres, shown at an oblique overhead angle, alone without any accessories."
     },
     {
-      "path": "public/products/acc-stand.png",
+      "path": "public/products/acc-stand.webp",
       "subject": "A foldable brushed silver aluminium laptop stand, elevated open geometric form with two support arms and rubber contact pads, no laptop on it."
     },
     {
-      "path": "public/products/acc-light.png",
+      "path": "public/products/acc-light.webp",
       "subject": "An elegant adjustable desk lamp in sage green with a slim stem and round head, warm white light, circular base, neatly arranged USB-C cable."
     },
     {
-      "path": "public/products/kb-split.png",
+      "path": "public/products/kb-split.webp",
       "subject": "An ergonomic split wireless keyboard with two separate ivory key sections, pale sage wrist rests, a brushed silver base, no visible cable, both halves form one keyboard set."
     },
     {
-      "path": "public/products/kb-pocket.png",
+      "path": "public/products/kb-pocket.webp",
       "subject": "A compact travel folding wireless keyboard with ivory low-profile keys and a silver hinge, shown fully open, slim rectangular three-section design."
     },
     {
-      "path": "public/products/mouse-pebble.png",
+      "path": "public/products/mouse-pebble.webp",
       "subject": "A small flat oval wireless mouse in soft sage green with an ivory scroll wheel, understated matte plastic, gentle three-quarter angle."
     },
     {
-      "path": "public/products/mouse-trackball.png",
+      "path": "public/products/mouse-trackball.webp",
       "subject": "An ergonomic wireless trackball mouse in matte warm grey with a large smooth sage-green thumb ball on its left side, silver scroll wheel and sculpted palm rest."
     },
     {
-      "path": "public/products/monitor-clarity.png",
+      "path": "public/products/monitor-clarity.webp",
       "subject": "A flat premium 32-inch 4K desktop monitor, very thin black bezel and brushed silver height adjustable stand. Screen shows an abstract soft sage green and cream gradient, no interface."
     },
     {
-      "path": "public/products/monitor-portrait.png",
+      "path": "public/products/monitor-portrait.webp",
       "subject": "A premium 24-inch desktop monitor rotated into portrait orientation on a brushed silver height-adjustable stand, thin ivory frame and abstract sage-green cream gradient on the vertical screen."
     },
     {
-      "path": "public/products/acc-headset.png",
+      "path": "public/products/acc-headset.webp",
       "subject": "An over-ear wireless office headset in warm ivory with sage green padded earcups, adjustable headband and a slender boom microphone, one complete headset."
     },
     {
-      "path": "public/products/acc-organizer.png",
+      "path": "public/products/acc-organizer.webp",
       "subject": "A compact oak desktop organiser tray with three empty compartments, softly rounded edges and one pale sage felt-lined compartment, realistic natural wood grain."
     }
   ],
   "hero": {
-    "path": "public/images/workspace-hero.png",
+    "path": "public/images/workspace-hero.webp",
     "prompt": "Use case: photorealistic ecommerce homepage hero. A beautifully organised quiet home office, pale natural oak desk with a slim silver monitor displaying a sage green abstract wallpaper, ivory compact keyboard, ivory wireless mouse, recycled felt desk mat, sage desk lamp and small plant. Warm ivory plaster walls, daylight from left, restrained Scandinavian interiors, subtle forest green and sage accents. Wide landscape composition 16:9, desk on right two thirds, airy clean composition, no people, no logos, no letters, no watermark, no UI mockup. Accurate product materials, premium editorial interior photography, soft daylight."
   }
 }

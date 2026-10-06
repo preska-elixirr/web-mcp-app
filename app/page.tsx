@@ -42,7 +42,7 @@ export default function HomePage() {
         </div>
         <div className="hero-photo">
           <Image
-            src="/images/workspace-hero.png"
+            src="/images/workspace-hero.webp"
             alt="A calm oak workspace with a monitor, ivory keyboard and sage desk lamp"
             width={1672}
             height={941}
