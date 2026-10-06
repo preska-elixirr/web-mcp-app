@@ -1,6 +1,6 @@
 "use client";
 import { Search, SlidersHorizontal } from "lucide-react";
-import { useDeferredValue, useState, ViewTransition } from "react";
+import { useDeferredValue, useState } from "react";
 import { catalog, categoryLabels } from "@/lib/catalog";
 import { searchProducts } from "@/lib/domain";
 import { categories, type SearchFilters } from "@/lib/validation";
@@ -196,13 +196,11 @@ export function CatalogView({
           {products.length} essentials
           {filters.category ? ` / ${categoryLabels[filters.category]}` : ""}
         </p>
-        <ViewTransition>
-          <div className="product-grid catalog-products">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        </ViewTransition>
+        <div className="product-grid catalog-products">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
         {products.length === 0 && (
           <div className="empty-state">
             <Search size={36} />

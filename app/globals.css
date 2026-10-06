@@ -1781,7 +1781,12 @@ fieldset {
     font-size: 11px;
   }
 }
-/* React names each boundary uniquely, including every product and cart line. */
+/* Only the product photo animates between pages: the grid or cart photo
+   morphs into the detail photo and back. The rest of the page swaps at once.
+   React names each boundary uniquely, including every product and cart line. */
+:root {
+  --duration-move: 320ms;
+}
 ::view-transition {
   pointer-events: none;
 }
@@ -1790,28 +1795,23 @@ fieldset {
   animation-timing-function: ease-out;
 }
 ::view-transition-group(.product-photo-morph) {
-  animation-duration: 320ms;
+  animation-duration: var(--duration-move);
 }
-/* Separate exit/enter snapshots crossfade at their original viewport positions.
-   Sharing a name here would interpolate the entire page's scroll offset. */
-::view-transition-group(.page-fade) {
-  animation: none;
+::view-transition-image-pair(.product-photo-morph) {
+  animation-name: via-blur;
 }
-::view-transition-old(.page-fade) {
-  animation: 160ms ease-out both page-fade-out;
-}
-::view-transition-new(.page-fade) {
-  animation: 180ms ease-out both page-fade-in;
-}
-@keyframes page-fade-out {
-  to {
-    opacity: 0;
+@keyframes via-blur {
+  30% {
+    filter: blur(3px);
   }
 }
-@keyframes page-fade-in {
-  from {
-    opacity: 0;
-  }
+/* A photo whose partner is off screen disappears with the page instead of
+   lingering alone. */
+::view-transition-old(.product-photo-morph) {
+  animation-duration: 160ms;
+}
+::view-transition-new(.product-photo-morph) {
+  animation-duration: var(--duration-move);
 }
 ::view-transition-old(root),
 ::view-transition-new(root) {

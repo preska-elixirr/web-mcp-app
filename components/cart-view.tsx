@@ -50,90 +50,92 @@ export function CartView() {
               <span>Essential</span>
               <span>Quantity / total</span>
             </div>
-            <ViewTransition>
-              <div className="cart-lines">
-                {summary.lines.map((line) => (
-                  <ViewTransition key={line.productId}>
-                    <article className="cart-line">
-                      <Link
-                        href={productHref(line.product)}
-                        className="cart-line-photo"
-                      >
-                        <Image
-                          src={productImage(line.product)}
-                          alt={line.product.name}
-                          width={160}
-                          height={160}
-                          sizes="120px"
-                        />
-                      </Link>
-                      <div className="cart-line-copy">
-                        <h2>
-                          <Link href={productHref(line.product)}>
-                            {line.product.name}
-                          </Link>
-                        </h2>
-                        <p>{formatPrice(line.product.priceCents)} each</p>
-                        <Button
-                          variant="ghost"
-                          className="remove-item"
-                          onClick={() => {
-                            dispatch({
-                              type: "set",
-                              productId: line.productId,
-                              quantity: 0,
-                            });
-                            heading.current?.focus();
-                          }}
-                          aria-label={`Remove ${line.product.name}`}
-                        >
-                          <Trash2 size={14} />
-                          Remove
-                        </Button>
-                      </div>
-                      <div className="cart-line-controls">
-                        <div className="quantity-control">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label={`Decrease ${line.product.name} quantity`}
-                            disabled={line.quantity <= 1}
-                            onClick={() =>
-                              dispatch({
-                                type: "adjust",
-                                productId: line.productId,
-                                delta: -1,
-                              })
-                            }
-                          >
-                            <Minus size={16} />
-                          </Button>
-                          <output aria-label={`${line.product.name} quantity`}>
-                            {line.quantity}
-                          </output>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            aria-label={`Increase ${line.product.name} quantity`}
-                            disabled={line.quantity >= line.product.stock}
-                            onClick={() =>
-                              dispatch({
-                                type: "adjust",
-                                productId: line.productId,
-                                delta: 1,
-                              })
-                            }
-                          >
-                            <Plus size={16} />
-                          </Button>
-                        </div>
-                        <strong>{formatPrice(line.lineTotalCents)}</strong>
-                      </div>
-                    </article>
+            <div className="cart-lines">
+              {summary.lines.map((line) => (
+                <article className="cart-line" key={line.productId}>
+                  <ViewTransition
+                    name={`product-photo-${line.productId}`}
+                    default="none"
+                    share="product-photo-morph"
+                  >
+                    <Link
+                      href={productHref(line.product)}
+                      className="cart-line-photo"
+                    >
+                      <Image
+                        src={productImage(line.product)}
+                        alt={line.product.name}
+                        width={160}
+                        height={160}
+                        sizes="120px"
+                      />
+                    </Link>
                   </ViewTransition>
-                ))}
-              </div>
-            </ViewTransition>
+                  <div className="cart-line-copy">
+                    <h2>
+                      <Link href={productHref(line.product)}>
+                        {line.product.name}
+                      </Link>
+                    </h2>
+                    <p>{formatPrice(line.product.priceCents)} each</p>
+                    <Button
+                      variant="ghost"
+                      className="remove-item"
+                      onClick={() => {
+                        dispatch({
+                          type: "set",
+                          productId: line.productId,
+                          quantity: 0,
+                        });
+                        heading.current?.focus();
+                      }}
+                      aria-label={`Remove ${line.product.name}`}
+                    >
+                      <Trash2 size={14} />
+                      Remove
+                    </Button>
+                  </div>
+                  <div className="cart-line-controls">
+                    <div className="quantity-control">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Decrease ${line.product.name} quantity`}
+                        disabled={line.quantity <= 1}
+                        onClick={() =>
+                          dispatch({
+                            type: "adjust",
+                            productId: line.productId,
+                            delta: -1,
+                          })
+                        }
+                      >
+                        <Minus size={16} />
+                      </Button>
+                      <output aria-label={`${line.product.name} quantity`}>
+                        {line.quantity}
+                      </output>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Increase ${line.product.name} quantity`}
+                        disabled={line.quantity >= line.product.stock}
+                        onClick={() =>
+                          dispatch({
+                            type: "adjust",
+                            productId: line.productId,
+                            delta: 1,
+                          })
+                        }
+                      >
+                        <Plus size={16} />
+                      </Button>
+                    </div>
+                    <strong>{formatPrice(line.lineTotalCents)}</strong>
+                  </div>
+                </article>
+              ))}
+            </div>
             <Link href="/shop" className="text-link continue-shopping">
               <ArrowLeft size={16} />
               Keep exploring

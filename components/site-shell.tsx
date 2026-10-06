@@ -2,9 +2,8 @@
 import { ArrowUpRight, Menu, ShoppingBag, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, ViewTransition } from "react";
+import { useState } from "react";
 import { getCart } from "@/lib/domain";
-import { traceViewTransition } from "@/lib/view-transitions";
 import { useRouteScrollRestoration } from "./route-scroll-restoration";
 import { useShop } from "./shop-provider";
 import { Button } from "./ui/button";
@@ -139,19 +138,9 @@ export function SiteFooter() {
     </footer>
   );
 }
+// Pages own their view transitions (see PageTransition). This only hosts the
+// history scroll restoration hook.
 export function RouteTransition({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
   useRouteScrollRestoration();
-  return (
-    <ViewTransition
-      key={pathname}
-      enter="page-fade"
-      exit="page-fade"
-      default="none"
-      onEnter={(instance) => traceViewTransition("page-enter", instance.name)}
-      onExit={(instance) => traceViewTransition("page-exit", instance.name)}
-    >
-      <div>{children}</div>
-    </ViewTransition>
-  );
+  return children;
 }
