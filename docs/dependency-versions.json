@@ -1,0 +1,114 @@
+{
+  "checkedOn": "2026-10-06",
+  "source": "https://registry.npmjs.org/",
+  "packages": [
+    {
+      "name": "@base-ui/react",
+      "installed": "1.8.0",
+      "latest": "1.8.0",
+      "matches": true
+    },
+    {
+      "name": "class-variance-authority",
+      "installed": "0.7.1",
+      "latest": "0.7.1",
+      "matches": true
+    },
+    {
+      "name": "cn",
+      "installed": "0.4.0",
+      "latest": "0.4.0",
+      "matches": true
+    },
+    {
+      "name": "lucide-react",
+      "installed": "1.52.0",
+      "latest": "1.52.0",
+      "matches": true
+    },
+    {
+      "name": "next",
+      "installed": "16.3.8",
+      "latest": "16.3.8",
+      "matches": true
+    },
+    {
+      "name": "react",
+      "installed": "19.3.0",
+      "latest": "19.3.0",
+      "matches": true
+    },
+    {
+      "name": "react-dom",
+      "installed": "19.3.0",
+      "latest": "19.3.0",
+      "matches": true
+    },
+    {
+      "name": "shadcn",
+      "installed": "4.21.3",
+      "latest": "4.21.3",
+      "matches": true
+    },
+    {
+      "name": "tw-animate-css",
+      "installed": "1.4.0",
+      "latest": "1.4.0",
+      "matches": true
+    },
+    {
+      "name": "zod",
+      "installed": "4.6.5",
+      "latest": "4.6.5",
+      "matches": true
+    },
+    {
+      "name": "@biomejs/biome",
+      "installed": "2.5.15",
+      "latest": "2.5.15",
+      "matches": true
+    },
+    {
+      "name": "@tailwindcss/postcss",
+      "installed": "4.3.3",
+      "latest": "4.3.3",
+      "matches": true
+    },
+    {
+      "name": "@types/node",
+      "installed": "26.6.4",
+      "latest": "26.6.4",
+      "matches": true
+    },
+    {
+      "name": "@types/react",
+      "installed": "19.3.0",
+      "latest": "19.3.0",
+      "matches": true
+    },
+    {
+      "name": "@types/react-dom",
+      "installed": "19.3.0",
+      "latest": "19.3.0",
+      "matches": true
+    },
+    {
+      "name": "tailwindcss",
+      "installed": "4.3.3",
+      "latest": "4.3.3",
+      "matches": true
+    },
+    {
+      "name": "typescript",
+      "installed": "7.0.2",
+      "latest": "7.0.2",
+      "matches": true
+    },
+    {
+      "name": "vitest",
+      "installed": "5.0.3",
+      "latest": "5.0.3",
+      "matches": true
+    }
+  ]
+}

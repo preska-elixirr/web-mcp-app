@@ -2,7 +2,15 @@
 
 Created: October 6, 2026
 Project directory: `D:\projekti\WebMCP`
-Status: implementation plan; application has not been built or deployed.
+Status: Next.js foundation and initial manual webshop implemented locally on October 6, 2026. WebMCP integration and deployment are pending.
+
+## Implementation Progress
+
+- Milestone 1 complete: Next.js 16.3.8, React 19.3.0, TypeScript 7.0.2, Tailwind 4.3.3, shadcn/ui, Zod, Biome, Vitest, seeded catalog, and shared domain operations.
+- Milestone 2 initial implementation complete: filters, product details, stock-validated cart, safe persistence, review, simulated receipt, and reset. Desktop and mobile browser smoke checks performed.
+- View Transition API requested by the user: implemented through stable React 19.3 ViewTransition, with browser support checks and reduced-motion handling. Native animation playback remains to be verified in a supported browser.
+- Milestones 3–5 pending: native WebMCP tools and activity panel, deployment, and article materials.
+- All direct dependency versions were verified online; see `docs/dependency-versions.json` and README for setup and current limitations.
 
 ## Purpose
 
@@ -254,4 +262,4 @@ Working title: **From Clicks to Tool Calls: WebMCP in a Next.js Webshop**
 
 ## Next Session Handoff
 
-Open `D:\projekti\WebMCP` as the workspace and read `PLAN.md`. Begin with milestone 1, verify current framework and WebMCP documentation, and implement the MVP in this directory. The existing V7 Notes repository is unrelated to this demo and requires no changes.
+Open `D:\projekti\WebMCP` as the workspace and read `PLAN.md` and `README.md`. Next, begin milestone 3: verify the current native WebMCP API and browser setup, expose all six tools through the existing validated domain operations, add the support indicator and activity panel, and ensure sequential tools read committed React state. Verify native view-transition playback in a supported browser. Complete Vercel deployment and article materials afterwards. The existing V7 Notes repository is unrelated to this demo and requires no changes.
