@@ -3,6 +3,30 @@
   "source": "https://registry.npmjs.org/",
   "packages": [
     {
+      "name": "stripe",
+      "installed": "23.0.0",
+      "latest": "23.0.0",
+      "matches": true
+    },
+    {
+      "name": "react-hook-form",
+      "installed": "7.89.0",
+      "latest": "7.89.0",
+      "matches": true
+    },
+    {
+      "name": "@hookform/resolvers",
+      "installed": "5.9.1",
+      "latest": "5.9.1",
+      "matches": true
+    },
+    {
+      "name": "server-only",
+      "installed": "0.0.1",
+      "latest": "0.0.1",
+      "matches": true
+    },
+    {
       "name": "@base-ui/react",
       "installed": "1.8.0",
       "latest": "1.8.0",

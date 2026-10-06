@@ -24,8 +24,7 @@ function expectCode(action: () => unknown, code: DomainError["code"]) {
 }
 
 describe("catalog search", () => {
-  it("has 16 unique products with integer prices and stock", () => {
-    expect(catalog).toHaveLength(16);
+  it("has unique products with integer prices and stock", () => {
     expect(new Set(catalog.map((product) => product.id)).size).toBe(
       catalog.length,
     );
@@ -173,9 +172,30 @@ describe("versioned persistence", () => {
     "broken json",
     '{"version":2,"items":[]}',
     '{"version":1,"items":[{"productId":"missing","quantity":1}]}',
-    '{"version":1,"items":[{"productId":"kb-air","quantity":99}]}',
-    '{"version":1,"items":[{"productId":"kb-air","quantity":1},{"productId":"kb-air","quantity":1}]}',
+    '{"version":1,"items":[{"productId":"mouse-pro","quantity":1}]}',
+    '{"version":1,"items":[{"productId":"kb-air","quantity":0}]}',
   ])("discards invalid saved data: %s", (serialized) => {
     expect(restoreCart(serialized)).toEqual([]);
+  });
+
+  it("keeps valid lines when one saved line is bad", () => {
+    expect(
+      restoreCart(
+        '{"version":1,"items":[{"productId":"kb-air","quantity":1},{"productId":"missing","quantity":1},"junk"]}',
+      ),
+    ).toEqual([{ productId: "kb-air", quantity: 1 }]);
+  });
+
+  it("clamps saved quantities to stock and merges duplicate lines", () => {
+    expect(
+      restoreCart(
+        '{"version":1,"items":[{"productId":"kb-air","quantity":99}]}',
+      ),
+    ).toEqual([{ productId: "kb-air", quantity: 24 }]);
+    expect(
+      restoreCart(
+        '{"version":1,"items":[{"productId":"kb-air","quantity":1},{"productId":"kb-air","quantity":1}]}',
+      ),
+    ).toEqual([{ productId: "kb-air", quantity: 2 }]);
   });
 });

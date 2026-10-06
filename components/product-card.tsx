@@ -1,136 +1,78 @@
 "use client";
-
-import { Cable, Keyboard, Monitor, Mouse, Plus } from "lucide-react";
+import { ArrowUpRight, Plus } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { ViewTransition } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { categoryLabels } from "@/lib/catalog";
 import { formatPrice } from "@/lib/domain";
+import { productHref, productImage } from "@/lib/products";
 import type { Product } from "@/lib/validation";
-
-const categoryIcons = {
-  keyboards: Keyboard,
-  mice: Mouse,
-  monitors: Monitor,
-  accessories: Cable,
-};
-
-export function ProductCard({
-  product,
-  quantity,
-  ready,
-  onAdd,
-}: {
-  product: Product;
-  quantity: number;
-  ready: boolean;
-  onAdd: () => void;
-}) {
-  const Icon = categoryIcons[product.category];
-  const atLimit = quantity >= product.stock;
+import { traceViewTransition } from "@/lib/view-transitions";
+import { useShop } from "./shop-provider";
+import { Button } from "./ui/button";
+export function ProductCard({ product }: { product: Product }) {
+  const { state, dispatch } = useShop();
+  const quantity =
+    state.cart.find((item) => item.productId === product.id)?.quantity ?? 0;
   return (
-    <ViewTransition default="product-transition">
-      <Card className="h-full overflow-hidden border-border/80 py-0 shadow-none">
-        <div
-          className={`product-art product-art-${product.category}`}
-          aria-hidden="true"
+    <ViewTransition>
+      <article className="product-card">
+        <ViewTransition
+          name={`product-photo-${product.id}`}
+          default="none"
+          share="product-photo-morph"
+          onShare={(instance) =>
+            traceViewTransition("photo-share", instance.name)
+          }
         >
-          <Icon className="size-20" strokeWidth={1.1} />
-          <span className="product-art-label">
-            OFFICE / {product.category.toUpperCase()}
-          </span>
-        </div>
-        <CardContent className="flex flex-1 flex-col gap-3 p-5">
-          <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-            <span>{categoryLabels[product.category]}</span>
-            {product.connectivity !== "none" && (
-              <Badge variant="secondary" className="capitalize">
-                {product.connectivity}
-              </Badge>
+          <Link
+            href={productHref(product)}
+            className="product-photo"
+            aria-label={`View ${product.name}`}
+          >
+            <Image
+              src={productImage(product)}
+              alt={product.name}
+              width={1024}
+              height={1024}
+              sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 25vw"
+            />
+            {product.stock === 0 && (
+              <span className="photo-badge">Sold out</span>
             )}
-          </div>
-          <h3 className="text-base font-semibold tracking-tight">
-            {product.name}
-          </h3>
-          <p className="min-h-10 text-sm leading-5 text-muted-foreground">
-            {product.description}
+            <span className="photo-arrow">
+              <ArrowUpRight size={20} />
+            </span>
+          </Link>
+        </ViewTransition>
+        <div className="product-card-content">
+          <p className="eyebrow">
+            {categoryLabels[product.category]}
+            {product.connectivity !== "none"
+              ? ` / ${product.connectivity}`
+              : ""}
           </p>
-          <div className="mt-auto flex items-center justify-between gap-2">
-            <span className="text-xl font-semibold tabular-nums">
-              {formatPrice(product.priceCents)}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {product.stock ? `${product.stock} in stock` : "Out of stock"}
-            </span>
-          </div>
-          <div className="flex gap-2">
+          <h3>
+            <Link href={productHref(product)}>{product.name}</Link>
+          </h3>
+          <p className="product-description">{product.description}</p>
+          <div className="product-card-bottom">
+            <span className="price">{formatPrice(product.priceCents)}</span>
             <Button
-              className="min-h-12 flex-1"
-              type="button"
-              onClick={onAdd}
-              disabled={!ready || atLimit}
+              variant="outline"
+              size="icon"
+              className="add-product"
               aria-label={`Add ${product.name} to cart`}
+              disabled={!state.hydrated || quantity >= product.stock}
+              onClick={() =>
+                dispatch({ type: "add", productId: product.id, quantity: 1 })
+              }
             >
-              <Plus aria-hidden="true" />
-              {product.stock === 0
-                ? "Sold out"
-                : atLimit
-                  ? "Stock limit"
-                  : "Add to cart"}
+              <Plus />
             </Button>
-            <Dialog>
-              <DialogTrigger
-                render={
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="min-h-12"
-                  />
-                }
-                aria-label={`Details for ${product.name}`}
-              >
-                Details
-              </DialogTrigger>
-              <DialogContent className="max-h-[85dvh] overflow-y-auto p-6 sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle className="pr-6 text-xl">
-                    {product.name}
-                  </DialogTitle>
-                  <DialogDescription>{product.description}</DialogDescription>
-                </DialogHeader>
-                <ul className="list-disc space-y-2 pl-5 text-muted-foreground">
-                  {product.specifications.map((specification) => (
-                    <li key={specification}>{specification}</li>
-                  ))}
-                </ul>
-                <p className="text-xl font-semibold">
-                  {formatPrice(product.priceCents)}
-                </p>
-                <p className="text-muted-foreground">
-                  {product.stock} in stock · {quantity} in your cart
-                </p>
-                <Button
-                  type="button"
-                  className="min-h-12"
-                  disabled={!ready || atLimit}
-                  onClick={onAdd}
-                >
-                  Add to cart
-                </Button>
-              </DialogContent>
-            </Dialog>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </article>
     </ViewTransition>
   );
 }

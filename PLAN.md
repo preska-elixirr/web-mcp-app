@@ -2,9 +2,21 @@
 
 Created: October 6, 2026
 Project directory: `D:\projekti\WebMCP`
-Status: Next.js foundation and initial manual webshop implemented locally on October 6, 2026. WebMCP integration and deployment are pending.
+Status: Expanded multipage Next.js shop and native WebMCP integration implemented locally on October 6, 2026. Stripe test credentials, deployment and article materials are pending.
 
 ## Implementation Progress
+
+### Current user-approved scope (supersedes the original MVP exclusions below)
+
+The user requested a complete shop with separate homepage, catalog, product, cart and checkout pages, generated photography, Stripe test payment, shadcn/ui and View Transition API. The user explicitly selected Stripe test mode and has no Stripe account/key yet.
+
+- Dedicated routes, 24 product pages, persistent cart, quantity/stock validation, delivery choices, checkout contact form, success/pending/cancelled states and customer information pages are implemented.
+- 24 product photographs and one workspace hero were generated and copied into `public/`. Prompt records are in `docs/image-prompts.json`.
+- React Hook Form 7.89.0, resolvers 5.9.1 and Stripe SDK 23.0.0 were verified online and installed with pinned versions. UI primitives remain in `components/ui/`.
+- Stripe hosted test Checkout integration computes amounts from the server catalog, deduplicates retries, rejects live keys and verifies paid sessions before displaying receipts. Optional signed test webhook verification is implemented. Actual Stripe session/payment/webhook checks await the user's private test key; see `docs/stripe-setup.md`.
+- All six native WebMCP tools were registered, discovered and called in the browser. Shared state, stock errors, checkout preparation and visible tool activity are implemented. Tools never submit payment.
+- Native React view transitions cover route navigation, product image morphs, filters and cart updates, with reduced-motion and unsupported-browser fallbacks.
+- Deployment and knowledge-base article materials remain later milestones. The historical MVP plan below describes the original smaller scope and simulated confirmation, which has been replaced by verified Stripe test checkout.
 
 - Milestone 1 complete: Next.js 16.3.8, React 19.3.0, TypeScript 7.0.2, Tailwind 4.3.3, shadcn/ui, Zod, Biome, Vitest, seeded catalog, and shared domain operations.
 - Milestone 2 initial implementation complete: filters, product details, stock-validated cart, safe persistence, review, simulated receipt, and reset. Desktop and mobile browser smoke checks performed.
@@ -260,6 +272,6 @@ Working title: **From Clicks to Tool Calls: WebMCP in a Next.js Webshop**
 - [Designing WebMCP workflows and tools](https://developer.chrome.com/docs/ai/webmcp/build-tools)
 - [Official demo and tooling repository](https://github.com/GoogleChromeLabs/webmcp-tools)
 
-## Next Session Handoff
+## Next Session Handoff (updated after scope expansion)
 
-Open `D:\projekti\WebMCP` as the workspace and read `PLAN.md` and `README.md`. Next, begin milestone 3: verify the current native WebMCP API and browser setup, expose all six tools through the existing validated domain operations, add the support indicator and activity panel, and ensure sequential tools read committed React state. Verify native view-transition playback in a supported browser. Complete Vercel deployment and article materials afterwards. The existing V7 Notes repository is unrelated to this demo and requires no changes.
+Read `README.md`, `docs/verification.md` and `docs/stripe-setup.md`. The expanded shop and six native tools are implemented. When the user has a Stripe test account, configure the private test key locally and verify hosted payment, cancellation/decline, server receipt and optional signed webhook delivery. Then complete the remaining Vercel deployment and article milestones. The existing V7 Notes repository is unrelated to this demo and requires no changes.

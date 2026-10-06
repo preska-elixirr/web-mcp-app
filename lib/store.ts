@@ -1,3 +1,4 @@
+import { cartSignature } from "./checkout";
 import {
   addToCart,
   DomainError,
@@ -14,7 +15,6 @@ export type ShopState = {
   cart: Cart;
   revision: number;
   review: { summary: CheckoutSummary; revision: number } | null;
-  receipt: CheckoutSummary | null;
   hydrated: boolean;
   message: string;
   error: string;
@@ -24,7 +24,6 @@ export const initialShopState: ShopState = {
   cart: [],
   revision: 0,
   review: null,
-  receipt: null,
   hydrated: false,
   message: "",
   error: "",
@@ -37,18 +36,29 @@ export type ShopAction =
   | { type: "adjust"; productId: string; delta: 1 | -1 }
   | { type: "review" }
   | { type: "cancel-review" }
-  | { type: "confirm" }
   | { type: "reset" }
+  | { type: "paid"; signature: string }
   | { type: "dismiss-feedback" };
 
 export function shopReducer(state: ShopState, action: ShopAction): ShopState {
   try {
     switch (action.type) {
+      case "paid":
+        if (cartSignature(state.cart) !== action.signature) return state;
+        return {
+          ...state,
+          cart: [],
+          revision: state.revision + 1,
+          review: null,
+          message: "Test payment confirmed.",
+          error: "",
+        };
       case "hydrate":
         return {
           ...state,
           cart: restoreCart(action.serialized),
           hydrated: true,
+          review: null,
         };
       case "add":
       case "adjust":
@@ -69,7 +79,6 @@ export function shopReducer(state: ShopState, action: ShopAction): ShopState {
           cart,
           revision: state.revision + 1,
           review: null,
-          receipt: null,
           error: "",
           message:
             action.type === "add"
@@ -89,25 +98,6 @@ export function shopReducer(state: ShopState, action: ShopAction): ShopState {
         };
       case "cancel-review":
         return { ...state, review: null };
-      case "confirm": {
-        if (!state.review || state.review.revision !== state.revision) {
-          return {
-            ...state,
-            error:
-              "The cart changed. Review your order again before confirming.",
-          };
-        }
-        const receipt = prepareCheckout(state.cart);
-        return {
-          ...state,
-          cart: [],
-          revision: state.revision + 1,
-          review: null,
-          receipt,
-          error: "",
-          message: "Demo order confirmed. Nothing has been purchased.",
-        };
-      }
       case "reset":
         return {
           ...initialShopState,

@@ -37,10 +37,10 @@ export const setCartQuantitySchema = addToCartSchema.extend({
   quantity: z.number().int().nonnegative(),
 });
 
-export const cartSchema = z.array(addToCartSchema).max(20);
+export const cartSchema = z.array(addToCartSchema).max(100);
 export const savedCartSchema = z.strictObject({
   version: z.literal(1),
-  items: cartSchema,
+  items: z.array(z.unknown()).max(100),
 });
 
 export type Product = z.infer<typeof productSchema>;

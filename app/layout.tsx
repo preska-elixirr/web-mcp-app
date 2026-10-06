@@ -1,8 +1,19 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ShopProvider } from "@/components/shop-provider";
+import {
+  RouteTransition,
+  SiteFooter,
+  SiteHeader,
+} from "@/components/site-shell";
+import { metadataOrigin } from "@/lib/stripe";
 
 export const metadata: Metadata = {
-  title: "Office Supply — WebMCP demo",
+  metadataBase: new URL(metadataOrigin()),
+  title: {
+    default: "Office Supply — A calmer workspace",
+    template: "%s · Office Supply",
+  },
   description:
     "A fictional office webshop demonstrating shared operations for people and webpage tools.",
 };
@@ -12,7 +23,13 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <ShopProvider>
+          <SiteHeader />
+          <RouteTransition>{children}</RouteTransition>
+          <SiteFooter />
+        </ShopProvider>
+      </body>
     </html>
   );
 }

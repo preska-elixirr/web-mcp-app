@@ -162,11 +162,28 @@ export function prepareCheckout(cart: Cart) {
   return summary;
 }
 
+// A single bad line (removed product, changed stock, duplicate) must not
+// discard the whole saved cart. Bad lines are dropped, quantities clamped
+// to stock and duplicates merged.
 export function restoreCart(serialized: string | null): Cart {
   if (!serialized) return [];
   try {
     const saved = savedCartSchema.parse(JSON.parse(serialized));
-    return validateCart(saved.items);
+    const merged = new Map<string, number>();
+    for (const item of saved.items) {
+      const line = addToCartSchema.safeParse(item);
+      if (!line.success) continue;
+      const product = catalog.find((entry) => entry.id === line.data.productId);
+      if (!product) continue;
+      const quantity = Math.min(
+        (merged.get(product.id) ?? 0) + line.data.quantity,
+        product.stock,
+      );
+      if (quantity > 0) merged.set(product.id, quantity);
+    }
+    return validateCart(
+      [...merged].map(([productId, quantity]) => ({ productId, quantity })),
+    );
   } catch {
     return [];
   }

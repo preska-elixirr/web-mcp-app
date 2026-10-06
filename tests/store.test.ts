@@ -20,38 +20,31 @@ describe("checkout lifecycle", () => {
     });
     expect(state.cart[0].quantity).toBe(3);
   });
-  it("invalidates the review after any cart mutation and prevents stale confirmation", () => {
+  it("invalidates the review after any cart mutation", () => {
     let state = shopReducer(initialShopState, {
       type: "add",
       productId: "kb-air",
       quantity: 1,
     });
     state = shopReducer(state, { type: "review" });
-    const review = state.review;
     state = shopReducer(state, {
       type: "set",
       productId: "kb-air",
       quantity: 2,
     });
     expect(state.review).toBeNull();
-    state = shopReducer({ ...state, review }, { type: "confirm" });
-    expect(state.receipt).toBeNull();
     expect(state.cart[0].quantity).toBe(2);
-    expect(state.error).toContain("changed");
   });
 
-  it("creates a receipt only on manual confirmation and clears the cart", () => {
+  it("keeps the cart while preparing a checkout review", () => {
     let state = shopReducer(initialShopState, {
       type: "add",
       productId: "kb-air",
       quantity: 2,
     });
     state = shopReducer(state, { type: "review" });
-    expect(state.receipt).toBeNull();
-    state = shopReducer(state, { type: "confirm" });
-    expect(state.receipt?.totalCents).toBe(6980);
-    expect(state.cart).toEqual([]);
-    expect(state.review).toBeNull();
+    expect(state.review?.summary.totalCents).toBe(6980);
+    expect(state.cart[0].quantity).toBe(2);
   });
 
   it("preserves cart and review on a failed stock update", () => {
@@ -72,14 +65,13 @@ describe("checkout lifecycle", () => {
     expect(failed.error).toContain("24");
   });
 
-  it("resets cart, review and receipt", () => {
+  it("resets cart and review", () => {
     const state = shopReducer(
       { ...initialShopState, cart: [{ productId: "kb-air", quantity: 1 }] },
       { type: "reset" },
     );
     expect(state.cart).toEqual([]);
     expect(state.review).toBeNull();
-    expect(state.receipt).toBeNull();
     expect(state.hydrated).toBe(true);
   });
 });
