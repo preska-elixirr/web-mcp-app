@@ -10,12 +10,13 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { NativeSelect, NativeSelectOption } from "./ui/native-select";
 export function CatalogView({
-  initialCategory,
+  category,
+  onCategoryChange,
 }: {
-  initialCategory?: SearchFilters["category"];
+  category?: SearchFilters["category"];
+  onCategoryChange: (category: SearchFilters["category"]) => void;
 }) {
-  const [filters, setFilters] = useState<SearchFilters>({
-    category: initialCategory,
+  const [filters, setFilters] = useState<Omit<SearchFilters, "category">>({
     sort: "featured",
   });
   const [query, setQuery] = useState("");
@@ -23,8 +24,12 @@ export function CatalogView({
   const [maxPrice, setMaxPrice] = useState("");
   const [priceError, setPriceError] = useState("");
   const [mobileFilters, setMobileFilters] = useState(false);
-  const products = searchProducts({ ...filters, query: deferredQuery });
-  const update = (value: Partial<SearchFilters>) =>
+  const products = searchProducts({
+    ...filters,
+    category,
+    query: deferredQuery,
+  });
+  const update = (value: Partial<Omit<SearchFilters, "category">>) =>
     transitionView(() => setFilters((previous) => ({ ...previous, ...value })));
   return (
     <section className="catalog-layout" aria-label="Product catalog">
@@ -37,23 +42,23 @@ export function CatalogView({
           <legend>Category</legend>
           <div className="category-filters">
             <Button
-              variant={!filters.category ? "secondary" : "ghost"}
-              aria-pressed={!filters.category}
-              onClick={() => update({ category: undefined })}
+              variant={!category ? "secondary" : "ghost"}
+              aria-pressed={!category}
+              onClick={() => transitionView(() => onCategoryChange(undefined))}
             >
               All essentials <span>{catalog.length}</span>
             </Button>
-            {categories.map((category) => (
+            {categories.map((value) => (
               <Button
-                key={category}
-                variant={filters.category === category ? "secondary" : "ghost"}
-                aria-pressed={filters.category === category}
-                onClick={() => update({ category })}
+                key={value}
+                variant={category === value ? "secondary" : "ghost"}
+                aria-pressed={category === value}
+                onClick={() => transitionView(() => onCategoryChange(value))}
               >
-                {categoryLabels[category]}
+                {categoryLabels[value]}
                 <span>
                   {
-                    catalog.filter((product) => product.category === category)
+                    catalog.filter((product) => product.category === value)
                       .length
                   }
                 </span>
@@ -135,7 +140,10 @@ export function CatalogView({
             setQuery("");
             setMaxPrice("");
             setPriceError("");
-            transitionView(() => setFilters({ sort: "featured" }));
+            transitionView(() => {
+              setFilters({ sort: "featured" });
+              onCategoryChange(undefined);
+            });
           }}
         >
           Clear filters
@@ -194,7 +202,7 @@ export function CatalogView({
         </div>
         <p className="catalog-count" role="status">
           {products.length} essentials
-          {filters.category ? ` / ${categoryLabels[filters.category]}` : ""}
+          {category ? ` / ${categoryLabels[category]}` : ""}
         </p>
         <div className="product-grid catalog-products">
           {products.map((product) => (
