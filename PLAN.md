@@ -120,6 +120,7 @@ Finalize schemas and return formats against the current native WebMCP API before
 | `set_cart_quantity` | Product ID and non-negative integer quantity | Sets an absolute quantity; zero removes the item; returns the updated cart. |
 | `get_cart` | None | Returns lines, quantities, line totals, overall total, and currency; read only. |
 | `prepare_checkout` | None | Validates the cart and opens a review summary; returns the summary and its revision. Does not confirm an order. |
+| `start_checkout` | Name, email, delivery method, demo acknowledgement | Validates the cart, creates a Stripe test session through the checkout API and returns its URL and totals. Does not open the URL; a human pays on Stripe's page. |
 
 Contract rules:
 

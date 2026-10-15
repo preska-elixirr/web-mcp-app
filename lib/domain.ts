@@ -15,7 +15,8 @@ export type ErrorCode =
   | "INVALID_ARGUMENTS"
   | "INSUFFICIENT_STOCK"
   | "INVALID_CART"
-  | "EMPTY_CART";
+  | "EMPTY_CART"
+  | "CHECKOUT_FAILED";
 
 export class DomainError extends Error {
   constructor(
