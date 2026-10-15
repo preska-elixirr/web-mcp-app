@@ -6,6 +6,7 @@ import {
   SiteFooter,
   SiteHeader,
 } from "@/components/site-shell";
+import { WebMcpPanel } from "@/components/webmcp-activity";
 import { metadataOrigin } from "@/lib/stripe";
 
 export const metadata: Metadata = {
@@ -28,6 +29,7 @@ export default function RootLayout({
           <SiteHeader />
           <RouteTransition>{children}</RouteTransition>
           <SiteFooter />
+          <WebMcpPanel />
         </ShopProvider>
       </body>
     </html>

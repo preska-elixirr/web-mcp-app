@@ -4,6 +4,7 @@ import {
   cartSignature,
   checkoutFormSchema,
   checkoutTotals,
+  shippingMethods,
 } from "./checkout";
 import {
   addToCart,
@@ -23,6 +24,7 @@ import {
 } from "./validation";
 export type WebTool = {
   name: string;
+  title: string;
   description: string;
   inputSchema: Record<string, unknown>;
   annotations: {
@@ -51,14 +53,24 @@ export type ToolActivity = {
   success: boolean;
   timestamp: string;
   durationMs: number;
+  cancelled?: boolean;
 };
+export type ToolDefinition = Omit<WebTool, "execute">;
+export type PendingToolCall = Pick<
+  ToolActivity,
+  "id" | "name" | "input" | "timestamp"
+>;
 const emptySchema = z.strictObject({});
-const detailsSchema = z.strictObject({ productId: z.string().min(1).max(100) });
+const detailsSchema = z.strictObject({
+  productId: addToCartSchema.shape.productId,
+});
+const checkoutSummarySchema = checkoutFormSchema.pick({ shippingMethod: true });
 type Bridge = {
   getState: () => ShopState;
   dispatch: (action: ShopAction) => ShopState;
   openCheckout: () => void;
   record: (entry: ToolActivity) => void;
+  started?: (entry: PendingToolCall) => void;
 };
 // Same request and URL check as the checkout form submit in
 // components/checkout-view.tsx. Only a Stripe test checkout URL is returned.
@@ -75,6 +87,7 @@ async function createStripeSession(
       signal,
     });
   } catch {
+    signal?.throwIfAborted();
     throw new DomainError(
       "CHECKOUT_FAILED",
       "We could not connect to checkout. Your cart is still saved. Please try again.",
@@ -94,6 +107,10 @@ async function createStripeSession(
   return url.href;
 }
 export function createShopTools(bridge: Bridge): WebTool[] {
+  // An identical retry in this document reuses the server's Stripe
+  // idempotency key, including after a lost response or cancelled fetch.
+  // Contact details stay in memory, never in the activity/storage transcript.
+  let checkoutAttempt: { payload: string; id: string } | null = null;
   function tool(
     name: string,
     description: string,
@@ -103,6 +120,9 @@ export function createShopTools(bridge: Bridge): WebTool[] {
   ): WebTool {
     return {
       name,
+      title: name
+        .replaceAll("_", " ")
+        .replace(/^./, (letter) => letter.toUpperCase()),
       description,
       inputSchema: z.toJSONSchema(schema),
       annotations: {
@@ -113,14 +133,14 @@ export function createShopTools(bridge: Bridge): WebTool[] {
       },
       execute: async (input, options) => {
         const started = performance.now();
+        const id = crypto.randomUUID();
+        const timestamp = new Date().toISOString();
+        bridge.started?.({ id, name, input, timestamp });
         let success = true;
+        let cancelled = false;
         let output: string;
         try {
-          if (options?.signal?.aborted)
-            throw new DomainError(
-              "INVALID_ARGUMENTS",
-              "The tool call was cancelled.",
-            );
+          options?.signal?.throwIfAborted();
           if (!bridge.getState().hydrated)
             throw new DomainError(
               "INVALID_CART",
@@ -131,34 +151,51 @@ export function createShopTools(bridge: Bridge): WebTool[] {
             throw new DomainError(
               "INVALID_ARGUMENTS",
               "Arguments do not match this tool's input schema.",
+              {
+                issues: parsed.error.issues.map((issue) => ({
+                  path: issue.path.join("."),
+                  code: issue.code,
+                })),
+                recovery:
+                  "Use the tool's input schema to correct these fields and try again.",
+              },
             );
-          output = JSON.stringify({
-            ok: true,
-            result: await operation(parsed.data, options?.signal),
-          });
+          const result = await operation(parsed.data, options?.signal);
+          options?.signal?.throwIfAborted();
+          output = JSON.stringify({ ok: true, result });
         } catch (error) {
           success = false;
+          cancelled = options?.signal?.aborted === true;
           output = JSON.stringify({
             ok: false,
             error: {
-              code:
-                error instanceof DomainError ? error.code : "INTERNAL_ERROR",
-              message:
-                error instanceof DomainError
+              code: cancelled
+                ? "CANCELLED"
+                : error instanceof DomainError
+                  ? error.code
+                  : "INTERNAL_ERROR",
+              message: cancelled
+                ? "The tool call was cancelled. Read the cart before retrying a mutation; retrying identical checkout details reuses its attempt ID in this document."
+                : error instanceof DomainError
                   ? error.message
                   : "The tool could not complete.",
+              ...(error instanceof DomainError && error.details
+                ? { details: error.details }
+                : {}),
             },
           });
         }
         bridge.record({
-          id: crypto.randomUUID(),
+          id,
           name,
           input,
           output,
           success,
-          timestamp: new Date().toISOString(),
+          timestamp,
           durationMs: Math.round(performance.now() - started),
+          ...(cancelled ? { cancelled: true } : {}),
         });
+        options?.signal?.throwIfAborted();
         return output;
       },
     };
@@ -215,6 +252,32 @@ export function createShopTools(bridge: Bridge): WebTool[] {
       () => getCart(bridge.getState().cart),
     ),
     tool(
+      "clear_cart",
+      "Remove every product from the current cart and return the empty cart in EUR cents. Repeating the call keeps the cart empty. Previously created Stripe test sessions are separate and are not cancelled.",
+      emptySchema,
+      { readOnlyHint: false },
+      () => {
+        checkoutAttempt = null;
+        return getCart(bridge.dispatch({ type: "clear-cart" }).cart);
+      },
+    ),
+    tool(
+      "get_checkout_summary",
+      "Preview the non-empty cart with the selected delivery method. Returns product lines, subtotal, delivery fee, final total in EUR cents, shipping estimate and cart signature. Read only; suitable for reviewing the full cost before start_checkout.",
+      checkoutSummarySchema,
+      { readOnlyHint: true },
+      (input) => {
+        const { shippingMethod } = checkoutSummarySchema.parse(input);
+        const cart = bridge.getState().cart;
+        return {
+          ...checkoutTotals(cart, shippingMethod),
+          shippingMethod,
+          shippingEstimate: shippingMethods[shippingMethod].estimate,
+          signature: cartSignature(cart),
+        };
+      },
+    ),
+    tool(
       "prepare_checkout",
       "Validate the non-empty cart and open checkout for human review. Returns product subtotal in EUR cents, signature and checkout URL. Does not create a Stripe session, confirm an order or make payment.",
       emptySchema,
@@ -233,15 +296,21 @@ export function createShopTools(bridge: Bridge): WebTool[] {
     ),
     tool(
       "start_checkout",
-      "Start Stripe test checkout for the non-empty cart without the checkout form. Needs the customer's name, email, delivery method (standard or express) and acknowledgeDemo: true. Creates a Stripe test payment session and returns its URL plus the order total and delivery fee in EUR cents. Does not open the URL and does not make payment: a human must open the URL and pay on Stripe's hosted test page.",
+      "Create a Stripe test payment session for the non-empty cart using authorized contact details, delivery method and acknowledgeDemo: true. Returns a hosted payment URL and total/delivery fee in EUR cents. Identical requests reuse an attempt ID for retries in this document. Open the returned URL for human payment; this tool does not pay or navigate.",
       checkoutFormSchema,
       { readOnlyHint: false, consequentialHint: true },
       async (input, signal) => {
         const form = checkoutFormSchema.parse(input);
         const cart = bridge.getState().cart;
         const totals = checkoutTotals(cart, form.shippingMethod);
+        const payload = JSON.stringify({ ...form, cart: cartSignature(cart) });
+        if (checkoutAttempt?.payload !== payload)
+          checkoutAttempt = { payload, id: crypto.randomUUID() };
+        const requestCart = [...cart].sort((a, b) =>
+          a.productId.localeCompare(b.productId),
+        );
         const url = await createStripeSession(
-          { ...form, cart, attemptId: crypto.randomUUID() },
+          { ...form, cart: requestCart, attemptId: checkoutAttempt.id },
           signal,
         );
         return {
@@ -258,10 +327,12 @@ export async function registerShopTools(
   context: ModelContext,
   tools: WebTool[],
   signal: AbortSignal,
+  registered?: () => void,
 ): Promise<void> {
   for (const tool of tools) {
     if (signal.aborted) return;
     await context.registerTool(tool, { signal });
+    if (!signal.aborted) registered?.();
   }
 }
 const legacyContexts = new WeakSet<ModelContext>();

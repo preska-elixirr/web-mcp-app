@@ -37,6 +37,7 @@ export type ShopAction =
   | { type: "review" }
   | { type: "cancel-review" }
   | { type: "reset" }
+  | { type: "clear-cart" }
   | { type: "paid"; signature: string }
   | { type: "dismiss-feedback" };
 
@@ -98,12 +99,16 @@ export function shopReducer(state: ShopState, action: ShopAction): ShopState {
         };
       case "cancel-review":
         return { ...state, review: null };
+      case "clear-cart":
       case "reset":
         return {
           ...initialShopState,
           hydrated: true,
           revision: state.revision + 1,
-          message: "Demo reset. Your cart is empty.",
+          message:
+            action.type === "reset"
+              ? "Demo reset. Your cart is empty."
+              : "Your cart is empty.",
         };
       case "dismiss-feedback":
         return { ...state, message: "", error: "" };

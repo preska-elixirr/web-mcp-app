@@ -26,7 +26,7 @@ Without a key, checkout displays its configuration status and disables payment. 
 | `/checkout` | React Hook Form + Zod contact, delivery and order review |
 | `/checkout/success` | Server-verified Stripe test receipt or pending/unverified state |
 | `/help`, `/about` | Demo delivery, payment, privacy and shop information |
-| `/demo` | Native WebMCP support, repeatable scenario, tool activity and reset |
+| `/demo` | Browser/registration status, three native scenarios, live tool schemas, redacted activity and reset |
 | `/api/checkout` | Validated server creation of a Stripe test Checkout Session |
 | `/api/stripe/webhook` | Optional signed test-webhook verification |
 
@@ -75,17 +75,23 @@ Test orders are retained in Stripe's test dashboard. Stock is fixed seed data; t
 
 The browser also keeps a bounded list of completed test session IDs to prevent revisiting an old receipt from clearing a newly rebuilt identical cart. No contact or address details are stored in browser storage.
 
-The persistent root integration registers seven tools using the current `document.modelContext.registerTool()` API and abort-scoped cleanup. It feature-detects browser support and keeps the ordinary shop working when support is absent.
+The persistent root integration registers nine tools using the current `document.modelContext.registerTool()` API and abort-scoped cleanup. It feature-detects browser support and keeps the ordinary shop working when support is absent. Tool counts and the schema catalog are derived from the actual registry.
 
 - `search_products`, `get_product_details`, `get_cart`: read-only catalog/cart operations.
 - `add_to_cart`: additive positive integer quantities.
 - `set_cart_quantity`: absolute quantities; zero removes.
+- `clear_cart`: empties the cart in one repeatable call. Existing Stripe sessions are separate and are not cancelled.
+- `get_checkout_summary`: a read-only preview of the non-empty cart with the selected shipping method, subtotal, delivery fee, final total, delivery estimate and cart signature.
 - `prepare_checkout`: validates the cart and opens human review. It does not create payment sessions or submit payment.
 - `start_checkout`: takes name, email, delivery method and the demo acknowledgement, creates a Stripe test session through the same `/api/checkout` route and returns its URL with totals. It does not open the URL or submit payment; a human pays on Stripe's hosted page.
 
-Zod generates strict JSON schemas. Calls return structured JSON success or explicit domain errors and are shown in `/demo`. Mutations update and persist the current shared state before returning, so sequential calls see the latest cart. Native tool calls use synchronous React commits; ordinary UI updates use view transitions.
+Zod generates strict JSON schemas with parameter descriptions. Calls return structured JSON success or domain errors with recovery information. Stock errors include the product ID, requested final quantity and available quantity. Mutations update and persist the current shared state before returning, so sequential calls see the latest cart. Native tool calls use synchronous React commits; ordinary UI updates use view transitions.
 
-The repeatable scenario is 2 × `kb-air` plus 2 × `mouse-air`: **€109.60**, including free standard delivery, within the €180 budget. `/demo` has separate buttons for a normal UI example and execution through the actual native WebMCP API. No polyfill is used.
+The expandable WebMCP panel is available throughout the shop. It shows registration separately from observed calls and never claims to detect an agent connection. The latest 30 completed handler calls (including in-page scripted calls) and pending calls are visible. Only redacted input/output enters React activity state, sessionStorage and the copyable transcript: contact names, emails and Stripe checkout URLs are omitted. Saved history survives reloads and a same-tab return from Stripe, but does not count as calls in the newly loaded document. Browser storage failures leave an in-memory transcript and show a notice. Clear activity removes saved activity for this tab. The integration cannot identify a caller as an external agent, inspector or in-page script.
+
+`start_checkout` reuses an attempt ID for identical contact, delivery and cart details while the document stays open, so a timeout/cancelled request can be retried with Stripe's existing server idempotency key. Contact details and keys are kept only in memory. A reload starts a new attempt; this is not cross-document payment-session deduplication. Execution cancellation is passed to fetch and recorded; it cannot undo a request already accepted by Stripe. The checkout form retains its own existing attempt ID during retries. `add_to_cart` is additive and must not be blindly replayed after an uncertain result; read the cart or use `set_cart_quantity` for an absolute target instead.
+
+The shopping scenario is 2 × `kb-air` plus 2 × `mouse-air`: **€109.60**, including free standard delivery, within the €180 budget. Two more scenarios demonstrate an insufficient-stock response followed by recovery, and a quantity correction from four mice to two. Each explicitly labelled in-page script uses the actual native discovery/execution APIs and resets the cart and activity first. No scenario creates a Stripe session or pays. A separate UI example builds a cart without logging fake WebMCP calls. No polyfill is used.
 
 See [Chrome's official browser setup](https://developer.chrome.com/docs/ai/webmcp) and [Imperative API](https://developer.chrome.com/docs/ai/webmcp/imperative-api). Local Chrome setup uses `chrome://flags/#enable-webmcp-testing`; a public site can require an origin trial or compatible browser setup.
 

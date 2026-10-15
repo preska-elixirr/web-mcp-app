@@ -60,9 +60,9 @@ describe("WebMCP adapter", () => {
     ).rejects.toThrow("Execution failed");
     expect(failed.executeTool).toHaveBeenCalledOnce();
   });
-  it("exposes seven strict tools with correct safety hints", () => {
+  it("exposes nine strict tools with correct safety hints", () => {
     const { tools } = harness();
-    expect(tools).toHaveLength(7);
+    expect(tools).toHaveLength(9);
     expect(tools.map((tool) => tool.name)).not.toContain("confirm_payment");
     expect(
       tools.every((tool) => tool.inputSchema.additionalProperties === false),
@@ -118,7 +118,7 @@ describe("WebMCP adapter", () => {
     const controller = new AbortController();
     const { tools } = harness();
     await registerShopTools(context, tools, controller.signal);
-    expect(registerTool).toHaveBeenCalledTimes(7);
+    expect(registerTool).toHaveBeenCalledTimes(9);
     expect(registerTool.mock.calls[0][1].signal).toBe(controller.signal);
     controller.abort();
     registerTool.mockClear();

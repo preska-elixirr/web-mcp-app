@@ -4,75 +4,141 @@ import { useState } from "react";
 import { formatPrice } from "@/lib/domain";
 import { useShop } from "./shop-provider";
 import { Button } from "./ui/button";
-import { useWebMcp } from "./webmcp-provider";
+import {
+  ToolActivityActions,
+  ToolActivityList,
+  ToolCatalog,
+  WebMcpStatus,
+} from "./webmcp-activity";
+import { type DemoScenario, useWebMcp } from "./webmcp-provider";
+
+const scenarios: {
+  id: DemoScenario;
+  title: string;
+  prompt: string;
+  outcome: string;
+}[] = [
+  {
+    id: "shopping",
+    title: "Equip two colleagues",
+    prompt:
+      "Find the cheapest in-stock wireless keyboards and mice for two colleagues, within €180. Add two of each and prepare checkout.",
+    outcome:
+      "Two Air Wireless Keyboards and two Air Wireless Mice. €109.60 with free standard delivery. Opens the shop’s review page.",
+  },
+  {
+    id: "stock",
+    title: "Recover from unavailable stock",
+    prompt:
+      "Try to add more Air Wireless Keyboards than are in stock. Read the stock error, check that the cart is unchanged, then add two instead.",
+    outcome:
+      "An expected INSUFFICIENT_STOCK response with requested and available quantities, followed by a successful correction. €69.80 subtotal; €74.70 with standard delivery.",
+  },
+  {
+    id: "adjust",
+    title: "Change your mind",
+    prompt:
+      "Add four Air Wireless Mice. Change the final quantity to two and show the full cost with standard delivery.",
+    outcome:
+      "The quantity changes from four to two. €39.80 subtotal; €44.70 with standard delivery.",
+  },
+];
+
 export function DemoGuide() {
-  const { support, activity, clearActivity, runNativeScenario } = useWebMcp();
-  const { dispatch } = useShop();
-  const [running, setRunning] = useState(false);
+  const {
+    canRunScenario,
+    definitions,
+    scenario,
+    pending,
+    runNativeScenario,
+    clearActivity,
+  } = useWebMcp();
+  const { dispatch, state } = useShop();
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const busy = scenario !== null || pending.length > 0 || !state.hydrated;
   return (
     <div className="prose-page">
-      <div className="notice">
-        <strong>
-          Native WebMCP:{" "}
-          {support === "available"
-            ? "six tools registered"
-            : support === "unavailable"
-              ? "unavailable in this browser"
-              : support === "failed"
-                ? "registration failed"
-                : "checking browser support"}
-        </strong>
-        <p>
-          The shop remains usable through its normal interface in every
-          supported browser.
-        </p>
-      </div>
       <section>
-        <h2>A repeatable shopping scenario</h2>
+        <h2>What this browser can do</h2>
+        <WebMcpStatus />
         <p>
-          “I need equipment for two new colleagues: two wireless keyboards and
-          two wireless mice, with a budget of €180. Choose the cheapest in-stock
-          combination and prepare checkout for review.”
+          The API, the website and the agent each play a part. An enabled
+          browser flag can make the API available to this page; a compatible
+          agent still needs a way to discover and call its tools.
         </p>
         <p>
-          The expected cart contains two Air Wireless Keyboards and two Air
-          Wireless Mice. Product subtotal: <strong>{formatPrice(10960)}</strong>
-          . Standard delivery is free. Payment remains a manual step.
+          The activity panel in the corner stays available throughout the shop,
+          including after a return from Stripe.
         </p>
-        <div className="flex flex-wrap gap-3">
+      </section>
+      <section>
+        <h2>Three conversations to explore</h2>
+        <p>
+          These are scripted in-page scenarios, not an embedded AI assistant.
+          Each one clears the cart and activity, then calls the browser’s real
+          WebMCP discovery and execution APIs. A compatible agent can also
+          follow the prompts below independently.
+        </p>
+        <div className="webmcp-scenarios">
+          {scenarios.map((item) => (
+            <article key={item.id}>
+              <h3>{item.title}</h3>
+              <blockquote>{item.prompt}</blockquote>
+              <p>{item.outcome}</p>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={!canRunScenario || busy}
+                onClick={async () => {
+                  setError("");
+                  setNotice("");
+                  try {
+                    await runNativeScenario(item.id);
+                    setNotice(
+                      `Completed: ${item.title}. The actual calls are recorded below.`,
+                    );
+                  } catch (issue) {
+                    setError(
+                      issue instanceof Error
+                        ? issue.message
+                        : "The native scenario could not complete.",
+                    );
+                  }
+                }}
+              >
+                {scenario === item.id
+                  ? "Running native calls…"
+                  : "Reset & run scripted scenario"}
+              </Button>
+            </article>
+          ))}
+        </div>
+        {error && (
+          <p role="alert" className="field-error">
+            {error}
+          </p>
+        )}
+        <p role="status">{notice}</p>
+        <p>
+          The stock scenario intentionally produces one error. Successful
+          recovery is visible in the subsequent calls. None of these scenarios
+          creates a Stripe payment session.
+        </p>
+        <div className="webmcp-actions">
           <Button
-            disabled={running}
+            type="button"
+            disabled={busy}
             onClick={() => {
               dispatch({ type: "reset" });
               dispatch({ type: "add", productId: "kb-air", quantity: 2 });
               dispatch({ type: "add", productId: "mouse-air", quantity: 2 });
+              setNotice(
+                "Example cart built through the normal shop interface. No WebMCP tools were called.",
+              );
             }}
           >
-            Reset & build example cart
-          </Button>
-          <Button
-            variant="outline"
-            disabled={support !== "available" || running}
-            onClick={async () => {
-              setRunning(true);
-              setError("");
-              try {
-                await runNativeScenario();
-              } catch (issue) {
-                setError(
-                  issue instanceof Error
-                    ? issue.message
-                    : "Native tools could not run.",
-                );
-              } finally {
-                setRunning(false);
-              }
-            }}
-          >
-            {running
-              ? "Running native tools…"
-              : "Reset & run via native WebMCP"}
+            Build example cart through UI
           </Button>
           <Button
             variant="outline"
@@ -82,122 +148,112 @@ export function DemoGuide() {
             View cart
           </Button>
         </div>
-        {error && (
-          <p role="alert" className="field-error">
-            {error}
-          </p>
-        )}
-      </section>
-      <section>
-        <h2>Browser setup</h2>
-        <ol>
-          <li>
-            Use a Chrome version with the current WebMCP API. For local
-            development, enable{" "}
-            <code>chrome://flags/#enable-webmcp-testing</code> and relaunch
-            Chrome.
-          </li>
-          <li>Open this shop and check the native support indicator above.</li>
-          <li>
-            Use the official Model Context Tool Inspector extension or the
-            native scenario button to discover and call tools.
-          </li>
-        </ol>
         <p>
-          See{" "}
-          <a
-            href="https://developer.chrome.com/docs/ai/webmcp"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Chrome’s official WebMCP setup guide
-          </a>{" "}
-          for current browser and origin-trial requirements. No browser settings
-          are changed by this site.
+          The UI example builds the same {formatPrice(10960)} product subtotal
+          without calling WebMCP. It is a comparison, so it does not add tool
+          activity.
         </p>
       </section>
       <section>
-        <h2>Available tools</h2>
+        <h2>Browser and agent setup</h2>
+        <p>
+          In the ChatGPT desktop app’s built-in browser, a compatible Work or
+          Codex chat can discover the shop’s site tools. Browser API support and
+          access through an external-browser extension are separate
+          capabilities.
+        </p>
+        <p>
+          For local Chrome or Edge experiments, a compatible browser build and
+          the <code>#enable-webmcp-testing</code> flag may be needed. The
+          official inspector or the scripted scenarios can exercise the page’s
+          tools even when your preferred agent has no WebMCP integration.
+        </p>
         <ul>
           <li>
-            <code>search_products</code> — combined filters, unit prices in EUR
-            cents.
+            <a
+              href="https://learn.chatgpt.com/docs/webmcp"
+              target="_blank"
+              rel="noreferrer"
+            >
+              OpenAI site tools: availability and supported browser
+            </a>
           </li>
           <li>
-            <code>get_product_details</code> — specifications, stock and product
-            page.
-          </li>
-          <li>
-            <code>add_to_cart</code> — add a positive integer quantity.
-          </li>
-          <li>
-            <code>set_cart_quantity</code> — set the absolute quantity; zero
-            removes.
-          </li>
-          <li>
-            <code>get_cart</code> — current quantities and product subtotal.
-          </li>
-          <li>
-            <code>prepare_checkout</code> — validate the cart and open human
-            review.
-          </li>
-          <li>
-            <code>start_checkout</code> — skip the form: contact details and
-            delivery in, Stripe test payment URL out.
+            <a
+              href="https://developer.chrome.com/docs/ai/webmcp"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Chrome WebMCP: current browser and origin trial requirements
+            </a>
           </li>
         </ul>
         <p>
-          The tools use the same stock checks and cart operations as the
-          interface. None accepts card details or confirms payment. Only{" "}
-          <code>start_checkout</code> creates a Stripe test payment session, and
-          a human still pays on Stripe’s page.
+          The shop works through its ordinary interface when WebMCP is
+          unavailable. This page does not change browser settings or infer that
+          an agent is connected.
         </p>
       </section>
       <section>
-        <div className="flex items-center justify-between gap-4">
-          <h2>Tool activity</h2>
-          <Button variant="outline" onClick={clearActivity}>
-            Clear activity
-          </Button>
-        </div>
+        <h2>Available tools ({definitions.length})</h2>
         <p>
-          The last 20 native tool calls from this tab are shown below. Activity
-          is not saved across reloads.
+          These definitions come from the same registry used for native
+          registration. Expand a tool to see its parameters and annotations.
+          Prices are integer EUR cents.
         </p>
-        {activity.length === 0 ? (
-          <p>No native tool calls yet.</p>
-        ) : (
-          activity.map((entry) => (
-            <details key={entry.id} className="tool-activity">
-              <summary>
-                <strong>{entry.name}</strong>
-                <span>
-                  {entry.success ? "Success" : "Error"} · {entry.durationMs} ms
-                  · {new Date(entry.timestamp).toLocaleTimeString()}
-                </span>
-              </summary>
-              <pre>
-                {JSON.stringify(
-                  { input: entry.input, output: JSON.parse(entry.output) },
-                  null,
-                  2,
-                )}
-              </pre>
-            </details>
-          ))
-        )}
+        <ToolCatalog />
+        <p>
+          <code>add_to_cart</code> adds to an existing quantity.{" "}
+          <code>set_cart_quantity</code> sets the final quantity, and{" "}
+          <code>clear_cart</code> empties the cart. The latter two are safe to
+          repeat for the same requested state.
+        </p>
+        <p>
+          <code>get_checkout_summary</code> previews delivery and the final
+          amount without creating a session. <code>prepare_checkout</code> opens
+          shop review. <code>start_checkout</code> creates a Stripe test session
+          and returns its URL for a person to open and pay.
+        </p>
+        <p>
+          Identical <code>start_checkout</code> calls reuse an attempt ID while
+          this document stays open, including after a timeout or cancelled
+          request. A reload starts a new attempt. Cart or contact changes also
+          start a different attempt. A cancelled request may already have
+          reached Stripe; retrying identical details in the same page uses the
+          same key.
+        </p>
+        <p>
+          Tools share the interface’s validation and state. Annotations describe
+          intended effects; application validation and server checks enforce the
+          rules. Card details stay on Stripe.
+        </p>
+      </section>
+      <section id="activity">
+        <h2>Actual WebMCP activity</h2>
+        <p>
+          Entries are created only when a registered handler runs. They can come
+          from an agent, an inspector or the scripted scenarios above; caller
+          identity is not supplied by this integration. Previously saved entries
+          do not count as calls in the current page session.
+        </p>
+        <ToolActivityActions />
+        <ToolActivityList />
       </section>
       <section>
         <h2>Reset the demo</h2>
         <p>
-          This clears this browser’s cart and the visible tool activity. Stripe
-          test sessions already created remain in the Stripe dashboard.
+          This clears the browser cart and this tab’s saved activity. Previously
+          created Stripe test sessions remain in Stripe.
         </p>
         <Button
+          type="button"
           variant="outline"
+          disabled={busy}
           onClick={() => {
             dispatch({ type: "reset" });
             clearActivity();
+            setNotice("Cart and activity reset.");
+            setError("");
           }}
         >
           Reset cart & activity

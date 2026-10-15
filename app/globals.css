@@ -1404,6 +1404,238 @@ fieldset {
   font-size: 11px;
   background: var(--secondary);
 }
+.webmcp-panel {
+  position: fixed;
+  z-index: 85;
+  bottom: 16px;
+  left: 16px;
+  max-width: calc(100vw - 32px);
+  color: var(--foreground);
+  background: var(--background);
+  border: 1px solid #bbc7b5;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px #16291924;
+  font-size: 12px;
+}
+.webmcp-panel > summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 12px 16px;
+  list-style: none;
+  cursor: pointer;
+}
+.webmcp-panel > summary::-webkit-details-marker {
+  display: none;
+}
+.webmcp-panel > summary::after {
+  content: "+";
+  margin-left: auto;
+  font-size: 18px;
+}
+.webmcp-panel[open] > summary::after {
+  content: "−";
+}
+.webmcp-panel > summary:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 3px;
+}
+.webmcp-panel > summary > span:not(.webmcp-dot) {
+  color: var(--muted-foreground);
+}
+.webmcp-panel[open] {
+  width: 440px;
+}
+.webmcp-panel-body {
+  max-height: min(70dvh, 760px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 4px 20px 20px;
+  border-top: 1px solid var(--border);
+}
+.webmcp-panel-body h2 {
+  font-size: 20px;
+  font-weight: 500;
+  margin: 16px 0 8px;
+}
+.webmcp-panel-body p {
+  line-height: 1.7;
+  margin-block: 10px;
+}
+.webmcp-panel-body > a {
+  display: inline-block;
+  margin-top: 16px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.webmcp-dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #767970;
+}
+.webmcp-dot[data-state="available"] {
+  background: #28563f;
+}
+.webmcp-dot[data-state="failed"] {
+  background: #a13f2e;
+}
+.webmcp-status {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #eef0e9;
+  margin-block: 16px;
+}
+.webmcp-status dl {
+  display: grid;
+  gap: 12px;
+}
+.webmcp-status dl > div {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+}
+.webmcp-status dt,
+.webmcp-status dd {
+  font-size: 12px;
+  line-height: 1.6;
+}
+.webmcp-status dd {
+  font-weight: 600;
+}
+.webmcp-status p {
+  font-size: 11px;
+  color: var(--muted-foreground);
+  line-height: 1.8;
+  margin: 16px 0 0;
+}
+.webmcp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 14px 4px;
+}
+.webmcp-actions button {
+  min-height: 44px;
+  font-size: 11px;
+}
+.webmcp-copy-status,
+.webmcp-privacy,
+.webmcp-announcement {
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--muted-foreground);
+}
+.webmcp-copy-status:empty {
+  display: none;
+}
+.webmcp-calls {
+  margin-top: 16px;
+}
+.webmcp-calls .tool-activity summary {
+  display: block;
+  padding: 14px;
+}
+.webmcp-calls .tool-activity summary strong {
+  display: block;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.webmcp-calls .tool-activity summary span {
+  display: block;
+  margin-top: 6px;
+}
+.webmcp-calls .tool-activity summary small {
+  display: block;
+  margin-top: 10px;
+  font-size: 11px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+.webmcp-calls .tool-activity[data-outcome="error"] {
+  border-color: #c39b70;
+  background: #fbf5e9;
+}
+.webmcp-calls .tool-activity[data-outcome="cancelled"] {
+  border-style: dashed;
+}
+.webmcp-pending {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 14px;
+  border: 1px dashed var(--primary);
+  margin-block: 12px;
+}
+.webmcp-copy-fallback {
+  display: block;
+  font-size: 12px;
+}
+.webmcp-copy-fallback textarea {
+  display: block;
+  width: 100%;
+  min-height: 180px;
+  padding: 12px;
+  margin-top: 10px;
+  font: 11px / 1.6 monospace;
+  background: #fff;
+  border: 1px solid var(--border);
+}
+.webmcp-catalog .tool-activity > p {
+  padding: 0 16px;
+  margin-block: 0 16px;
+}
+.webmcp-scenarios {
+  display: grid;
+  gap: 16px;
+}
+.webmcp-scenarios article {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+}
+.webmcp-scenarios article h3 {
+  margin-top: 0;
+}
+.webmcp-scenarios blockquote {
+  border-left: 3px solid #bbc7b5;
+  padding-left: 16px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  line-height: 1.9;
+}
+.webmcp-scenarios button {
+  min-height: 44px;
+}
+.webmcp-scenario-note {
+  padding: 12px;
+  background: #f1ecd9;
+  border-radius: 4px;
+}
+@media (max-width: 640px) {
+  .webmcp-panel {
+    bottom: 10px;
+    left: 10px;
+    max-width: calc(100vw - 20px);
+  }
+  .webmcp-panel[open] {
+    width: calc(100vw - 20px);
+  }
+  .webmcp-panel-body {
+    max-height: 65dvh;
+    padding-inline: 14px;
+  }
+  .webmcp-panel > summary {
+    gap: 8px;
+    font-size: 11px;
+  }
+}
 @media (min-width: 900px) {
   .order-summary {
     position: sticky;
@@ -1768,7 +2000,7 @@ fieldset {
   }
   .shop-toast {
     right: 16px;
-    bottom: 16px;
+    bottom: 78px;
     padding-left: 16px;
   }
   .receipt-page {

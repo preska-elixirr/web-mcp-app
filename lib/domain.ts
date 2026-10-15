@@ -16,12 +16,14 @@ export type ErrorCode =
   | "INSUFFICIENT_STOCK"
   | "INVALID_CART"
   | "EMPTY_CART"
+  | "CANCELLED"
   | "CHECKOUT_FAILED";
 
 export class DomainError extends Error {
   constructor(
     public readonly code: ErrorCode,
     message: string,
+    public readonly details?: Record<string, unknown>,
   ) {
     super(message);
     this.name = "DomainError";
@@ -34,6 +36,10 @@ export function getProductDetails(productId: string): Product {
     throw new DomainError(
       "PRODUCT_NOT_FOUND",
       "This product is not in the catalog.",
+      {
+        productId,
+        recovery: "Use search_products to find a current product ID.",
+      },
     );
   return product;
 }
@@ -88,6 +94,13 @@ function validateCart(input: unknown): Cart {
       throw new DomainError(
         "INSUFFICIENT_STOCK",
         `Only ${product.stock} units of ${product.name} are available.`,
+        {
+          productId: item.productId,
+          requestedQuantity: item.quantity,
+          availableQuantity: product.stock,
+          recovery:
+            "Set a quantity at or below availableQuantity, or search for another product.",
+        },
       );
   }
   return parsed.data;
@@ -107,6 +120,13 @@ export function setCartQuantity(cart: Cart, input: unknown): Cart {
     throw new DomainError(
       "INSUFFICIENT_STOCK",
       `Only ${product.stock} units of ${product.name} are available.`,
+      {
+        productId,
+        requestedQuantity: quantity,
+        availableQuantity: product.stock,
+        recovery:
+          "Set a quantity at or below availableQuantity, or search for another product.",
+      },
     );
   if (quantity === 0)
     return current.filter((item) => item.productId !== productId);

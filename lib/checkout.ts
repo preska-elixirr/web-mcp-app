@@ -16,12 +16,30 @@ export const shippingMethods = {
 } as const;
 // Stripe collects the shipping and billing address on its hosted payment page.
 export const checkoutFormSchema = z.strictObject({
-  name: z.string().trim().min(2, "Enter your full name.").max(120),
-  email: z.email("Enter a valid email address.").max(254),
-  shippingMethod: z.enum(["standard", "express"]),
-  acknowledgeDemo: z.literal(true, {
-    error: "Confirm that this is a test order.",
-  }),
+  name: z
+    .string()
+    .trim()
+    .min(2, "Enter your full name.")
+    .max(120)
+    .describe(
+      "Customer contact name. Fictional names are suitable for this test shop.",
+    ),
+  email: z
+    .email("Enter a valid email address.")
+    .max(254)
+    .describe(
+      "Customer-authorized email address passed to Stripe test checkout.",
+    ),
+  shippingMethod: z
+    .enum(["standard", "express"])
+    .describe("Standard: €4.90, free from €100 subtotal. Express: €9.90."),
+  acknowledgeDemo: z
+    .literal(true, {
+      error: "Confirm that this is a test order.",
+    })
+    .describe(
+      "Explicit acknowledgement that this is a fictional test order with no real charge or delivery.",
+    ),
 });
 export const checkoutRequestSchema = checkoutFormSchema.extend({
   cart: cartSchema.min(1),
