@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { cartSignature } from "./checkout";
+import {
+  type CheckoutRequest,
+  cartSignature,
+  checkoutFormSchema,
+  checkoutTotals,
+} from "./checkout";
 import {
   addToCart,
   DomainError,
@@ -55,22 +60,56 @@ type Bridge = {
   openCheckout: () => void;
   record: (entry: ToolActivity) => void;
 };
+// Same request and URL check as the checkout form submit in
+// components/checkout-view.tsx. Only a Stripe test checkout URL is returned.
+async function createStripeSession(
+  request: CheckoutRequest,
+  signal?: AbortSignal,
+): Promise<string> {
+  let response: Response;
+  try {
+    response = await fetch("/api/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(request),
+      signal,
+    });
+  } catch {
+    throw new DomainError(
+      "CHECKOUT_FAILED",
+      "We could not connect to checkout. Your cart is still saved. Please try again.",
+    );
+  }
+  const result: { url?: string; error?: string } = await response
+    .json()
+    .catch(() => ({}));
+  if (!response.ok || !result.url)
+    throw new DomainError(
+      "CHECKOUT_FAILED",
+      result.error ?? "We could not start checkout. Please try again.",
+    );
+  const url = URL.canParse(result.url) ? new URL(result.url) : null;
+  if (url?.protocol !== "https:" || url.hostname !== "checkout.stripe.com")
+    throw new DomainError("CHECKOUT_FAILED", "Unexpected payment URL.");
+  return url.href;
+}
 export function createShopTools(bridge: Bridge): WebTool[] {
   function tool(
     name: string,
     description: string,
     schema: z.ZodType,
-    readOnly: boolean,
-    operation: (input: unknown) => unknown,
+    hints: Partial<WebTool["annotations"]>,
+    operation: (input: unknown, signal?: AbortSignal) => unknown,
   ): WebTool {
     return {
       name,
       description,
       inputSchema: z.toJSONSchema(schema),
       annotations: {
-        readOnlyHint: readOnly,
+        readOnlyHint: false,
         consequentialHint: false,
         untrustedContentHint: false,
+        ...hints,
       },
       execute: async (input, options) => {
         const started = performance.now();
@@ -93,7 +132,10 @@ export function createShopTools(bridge: Bridge): WebTool[] {
               "INVALID_ARGUMENTS",
               "Arguments do not match this tool's input schema.",
             );
-          output = JSON.stringify({ ok: true, result: operation(parsed.data) });
+          output = JSON.stringify({
+            ok: true,
+            result: await operation(parsed.data, options?.signal),
+          });
         } catch (error) {
           success = false;
           output = JSON.stringify({
@@ -126,7 +168,7 @@ export function createShopTools(bridge: Bridge): WebTool[] {
       "search_products",
       "Search fictional office products. Prices and maxPriceCents are EUR cents per unit. Filters are combined. Returns IDs, stock and product page links. Read only.",
       searchSchema,
-      true,
+      { readOnlyHint: true },
       (input) =>
         searchProducts(input).map((product) => ({
           ...product,
@@ -137,7 +179,7 @@ export function createShopTools(bridge: Bridge): WebTool[] {
       "get_product_details",
       "Get specifications, unit price in EUR cents and stock for a product ID. Read only.",
       detailsSchema,
-      true,
+      { readOnlyHint: true },
       (input) => {
         const product = getProductDetails(detailsSchema.parse(input).productId);
         return { ...product, url: productHref(product) };
@@ -147,7 +189,7 @@ export function createShopTools(bridge: Bridge): WebTool[] {
       "add_to_cart",
       "Add a positive integer quantity to the current cart, subject to stock. Quantity is additive. Updates the same visible cart used by the customer. Returns the full cart in EUR cents.",
       addToCartSchema,
-      false,
+      { readOnlyHint: false },
       (input) => {
         const args = addToCartSchema.parse(input);
         addToCart(bridge.getState().cart, args);
@@ -158,7 +200,7 @@ export function createShopTools(bridge: Bridge): WebTool[] {
       "set_cart_quantity",
       "Set an absolute non-negative integer quantity for a product. Zero removes it. Validates stock. Returns the updated cart in EUR cents.",
       setCartQuantitySchema,
-      false,
+      { readOnlyHint: false },
       (input) => {
         const args = setCartQuantitySchema.parse(input);
         setCartQuantity(bridge.getState().cart, args);
@@ -169,14 +211,14 @@ export function createShopTools(bridge: Bridge): WebTool[] {
       "get_cart",
       "Read current cart lines, quantities, product subtotal in EUR cents and currency. Delivery is selected at checkout. Read only.",
       emptySchema,
-      true,
+      { readOnlyHint: true },
       () => getCart(bridge.getState().cart),
     ),
     tool(
       "prepare_checkout",
       "Validate the non-empty cart and open checkout for human review. Returns product subtotal in EUR cents, signature and checkout URL. Does not create a Stripe session, confirm an order or make payment.",
       emptySchema,
-      false,
+      { readOnlyHint: false },
       () => {
         const summary = prepareCheckout(bridge.getState().cart);
         bridge.dispatch({ type: "review" });
@@ -185,6 +227,27 @@ export function createShopTools(bridge: Bridge): WebTool[] {
           ...summary,
           signature: cartSignature(bridge.getState().cart),
           url: "/checkout",
+          requiresHumanPayment: true,
+        };
+      },
+    ),
+    tool(
+      "start_checkout",
+      "Start Stripe test checkout for the non-empty cart without the checkout form. Needs the customer's name, email, delivery method (standard or express) and acknowledgeDemo: true. Creates a Stripe test payment session and returns its URL plus the order total and delivery fee in EUR cents. Does not open the URL and does not make payment: a human must open the URL and pay on Stripe's hosted test page.",
+      checkoutFormSchema,
+      { readOnlyHint: false, consequentialHint: true },
+      async (input, signal) => {
+        const form = checkoutFormSchema.parse(input);
+        const cart = bridge.getState().cart;
+        const totals = checkoutTotals(cart, form.shippingMethod);
+        const url = await createStripeSession(
+          { ...form, cart, attemptId: crypto.randomUUID() },
+          signal,
+        );
+        return {
+          url,
+          totalCents: totals.totalCents,
+          shippingCents: totals.shippingCents,
           requiresHumanPayment: true,
         };
       },

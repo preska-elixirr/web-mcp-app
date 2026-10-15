@@ -75,12 +75,13 @@ Test orders are retained in Stripe's test dashboard. Stock is fixed seed data; t
 
 The browser also keeps a bounded list of completed test session IDs to prevent revisiting an old receipt from clearing a newly rebuilt identical cart. No contact or address details are stored in browser storage.
 
-The persistent root integration registers six tools using the current `document.modelContext.registerTool()` API and abort-scoped cleanup. It feature-detects browser support and keeps the ordinary shop working when support is absent.
+The persistent root integration registers seven tools using the current `document.modelContext.registerTool()` API and abort-scoped cleanup. It feature-detects browser support and keeps the ordinary shop working when support is absent.
 
 - `search_products`, `get_product_details`, `get_cart`: read-only catalog/cart operations.
 - `add_to_cart`: additive positive integer quantities.
 - `set_cart_quantity`: absolute quantities; zero removes.
 - `prepare_checkout`: validates the cart and opens human review. It does not create payment sessions or submit payment.
+- `start_checkout`: takes name, email, delivery method and the demo acknowledgement, creates a Stripe test session through the same `/api/checkout` route and returns its URL with totals. It does not open the URL or submit payment; a human pays on Stripe's hosted page.
 
 Zod generates strict JSON schemas. Calls return structured JSON success or explicit domain errors and are shown in `/demo`. Mutations update and persist the current shared state before returning, so sequential calls see the latest cart. Native tool calls use synchronous React commits; ordinary UI updates use view transitions.
 

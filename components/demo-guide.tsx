@@ -141,11 +141,16 @@ export function DemoGuide() {
             <code>prepare_checkout</code> — validate the cart and open human
             review.
           </li>
+          <li>
+            <code>start_checkout</code> — skip the form: contact details and
+            delivery in, Stripe test payment URL out.
+          </li>
         </ul>
         <p>
           The tools use the same stock checks and cart operations as the
-          interface. None accepts card details, creates a Stripe payment session
-          or confirms payment.
+          interface. None accepts card details or confirms payment. Only{" "}
+          <code>start_checkout</code> creates a Stripe test payment session, and
+          a human still pays on Stripe’s page.
         </p>
       </section>
       <section>
