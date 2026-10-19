@@ -11,7 +11,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-Open [localhost:3000](http://localhost:3000). Browsing, cart operations and WebMCP do not need credentials. Stripe payment requires your own test account and server key; see [Stripe setup](docs/stripe-setup.md). Copy `.env.example` to `.env.local`, replace the placeholder with `STRIPE_SECRET_KEY=sk_test_...`, set `APP_URL` to the exact public origin and restart the server. Never commit `.env.local` or send the key in chat.
+Open [localhost:3000](http://localhost:3000). Browsing, cart operations and WebMCP do not need credentials. Stripe payment requires your own test account and server key; see [Stripe setup](docs/stripe-setup.md). Copy `.env.example` to `.env.local`, replace the placeholder with `STRIPE_SECRET_KEY=sk_test_...`, set `APP_URL` to the exact public origin and restart the server. For the WebMCP origin trials, put your tokens in `CHROME_ORIGIN_TRIAL_TOKEN` and `EDGE_ORIGIN_TRIAL_TOKEN`; every page then sends them in an `Origin-Trial` header. Never commit `.env.local` or send the key in chat.
 
 Without a key, checkout displays its configuration status and disables payment. It never fabricates a successful Stripe payment. Live keys are rejected.
 
